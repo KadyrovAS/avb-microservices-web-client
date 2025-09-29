@@ -1,4 +1,10 @@
 package com.avb.service;
 
-public class CompanyService {
+import com.avb.model.CompanyDTO;
+import java.util.List;
+
+public interface CompanyService{
+    List<CompanyDTO> findAllCompanies();
+    CompanyDTO findCompanyById(Integer id);
+    CompanyDTO addCompany(CompanyDTO companyDTO);
 }

@@ -15,15 +15,15 @@ public interface CompanyClient {
     @GetExchange
     List<CompanyDTO> getAllCompanies();
 
-    @GetExchange("{id}")
+    @GetExchange("/{id}")
     CompanyDTO getCompanyById(@PathVariable Integer id);
 
-    @PostExchange("/")
+    @PostExchange
     CompanyDTO createCompany(@RequestBody CompanyDTO user);
 
-    @PutExchange("/")
+    @PutExchange
     CompanyDTO editCompany(@RequestBody CompanyDTO user);
 
-    @DeleteExchange("{id}")
+    @DeleteExchange("/{id}")
     CompanyDTO deleteCompany(@PathVariable Integer id);
 }

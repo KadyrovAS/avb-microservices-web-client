@@ -2,8 +2,11 @@ package com.avb.controller;
 
 import com.avb.model.CompanyDTO;
 import com.avb.model.UserDTO;
+import com.avb.service.CompanyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +17,9 @@ import java.util.Map;
 public class CompanyController {
     private static final Logger logger = LoggerFactory.getLogger(CompanyController.class);
 
+    @Autowired
+    @Qualifier("CompanyServiceImp")
+    private CompanyService service;
 
     /**
      * Возвращает все компании, зарегистрированные в базе данных
@@ -23,8 +29,7 @@ public class CompanyController {
     @GetMapping
     public List<CompanyDTO> getCompanies() {
         logger.info("getCompanies");
-
-        return null;
+        return service.findAllCompanies();
     }
 
     /**
@@ -36,7 +41,7 @@ public class CompanyController {
     @GetMapping("{id}")
     public CompanyDTO getCompany(@PathVariable Integer id) {
         logger.info("getCompany: id = {}", id);
-        return null;
+        return service.findCompanyById(id);
     }
 
     /**
@@ -47,7 +52,7 @@ public class CompanyController {
     @PostMapping
     public CompanyDTO addCompany(@RequestBody CompanyDTO company) {
         logger.info("addCompany {}", company);
-        return null;
+        return service.addCompany(company);
     }
 
     /**

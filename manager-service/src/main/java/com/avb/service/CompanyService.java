@@ -30,7 +30,10 @@ public class CompanyService {
         if (companyDTO.getName() == null || companyDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Company name cannot be empty");
         }
-        return companyClient.createCompany(companyDTO);
+        logger.info("createCompany {}", companyDTO);
+        CompanyDTO companyToReturn = companyClient.createCompany(companyDTO);
+        logger.info("companyToReturn {}", companyToReturn);
+        return companyToReturn;
     }
 
     public CompanyDTO updateCompany(CompanyDTO companyDTO) {

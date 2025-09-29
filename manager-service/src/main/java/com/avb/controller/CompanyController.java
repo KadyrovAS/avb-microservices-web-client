@@ -27,20 +27,23 @@ public class CompanyController {
 
     @PostMapping
     public CompanyDTO createCompany(@RequestBody CompanyDTO companyDTO) {
+        logger.info("createCompany {}", companyDTO);
         return companyService.createCompany(companyDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     public CompanyDTO getCompanyById(@PathVariable Integer id) {
+        logger.info("getCompanyById {}", id);
         return companyService.getCompanyById(id);
     }
 
     @PutMapping
     public CompanyDTO updateCompany(@RequestBody CompanyDTO companyDTO) {
+        logger.info("updateCompany {}", companyDTO);
         return companyService.updateCompany(companyDTO);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     public void deleteCompany(@PathVariable Integer id) {
         companyService.deleteCompany(id);
     }
