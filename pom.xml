@@ -17,7 +17,7 @@
     <name>AVB Microservices</name>
 
     <modules>
-<!--        <module>users-service</module>-->
+        <module>users-service</module>
         <module>discovery-service</module>
         <module>common-module</module>
         <module>manager-service</module>

@@ -1,15 +1,13 @@
 package com.avb.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @Builder
 public class CompanyDTO {
     private Integer id;

@@ -15,7 +15,7 @@ public interface UserClient {
     @GetExchange
     List<UserDTO> getAllUsers();
 
-    @GetExchange("{id}")
+    @GetExchange("/{id}")
     UserDTO getUserById(@PathVariable Integer id);
 
     @PostExchange

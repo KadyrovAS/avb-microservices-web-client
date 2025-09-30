@@ -4,6 +4,8 @@ import com.avb.model.CompanyDTO;
 import com.avb.service.CompanyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,39 +14,39 @@ import java.util.List;
 @RequestMapping("/company")
 public class CompanyController {
 
-    private final CompanyService companyService;
-    private static final Logger logger = LoggerFactory.getLogger(CompanyController.class);
+    @Autowired
+    @Qualifier("CompanyServiceImp")
+    private CompanyService service;
 
-    public CompanyController(CompanyService companyService) {
-        this.companyService = companyService;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(CompanyController.class);
 
     @GetMapping
     public List<CompanyDTO> getAllCompanies() {
-        logger.info("getAllCompanies");
-        return companyService.getAllCompanies();
+        logger.info("Get all companies!");
+        return service.getAllCompanies();
     }
 
     @PostMapping
     public CompanyDTO createCompany(@RequestBody CompanyDTO companyDTO) {
-        logger.info("createCompany {}", companyDTO);
-        return companyService.createCompany(companyDTO);
+        logger.info("CreateCompany {}!", companyDTO);
+        return service.createCompany(companyDTO);
     }
 
     @GetMapping("{id}")
     public CompanyDTO getCompanyById(@PathVariable Integer id) {
-        logger.info("getCompanyById {}", id);
-        return companyService.getCompanyById(id);
+        logger.info("Get company by id = {}!", id);
+        return service.getCompanyById(id);
     }
 
     @PutMapping
     public CompanyDTO updateCompany(@RequestBody CompanyDTO companyDTO) {
-        logger.info("updateCompany {}", companyDTO);
-        return companyService.updateCompany(companyDTO);
+        logger.info("Update company {}!", companyDTO);
+        return service.updateCompany(companyDTO);
     }
 
     @DeleteMapping("{id}")
-    public void deleteCompany(@PathVariable Integer id) {
-        companyService.deleteCompany(id);
+    public CompanyDTO deleteCompany(@PathVariable Integer id) {
+        logger.info("Delete company with id = {}", id);
+        return service.deleteCompany(id);
     }
 }

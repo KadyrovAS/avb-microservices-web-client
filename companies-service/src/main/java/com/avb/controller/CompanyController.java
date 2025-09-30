@@ -1,7 +1,7 @@
 package com.avb.controller;
 
 import com.avb.model.CompanyDTO;
-import com.avb.model.UserDTO;
+import com.avb.model.TransferUserDTO;
 import com.avb.service.CompanyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -27,8 +26,8 @@ public class CompanyController {
      * @return List<Company>
      */
     @GetMapping
-    public List<CompanyDTO> getCompanies() {
-        logger.info("getCompanies");
+    public List<CompanyDTO> getAllCompanies() {
+        logger.info("get all companies");
         return service.findAllCompanies();
     }
 
@@ -63,7 +62,7 @@ public class CompanyController {
     @DeleteMapping("{id}")
     public CompanyDTO deleteCompany(@PathVariable int id) {
         logger.info("deleteCompany id = {}", id);
-        return null;
+        return service.deleteCompany(id);
     }
 
     /**
@@ -74,7 +73,7 @@ public class CompanyController {
     @PutMapping
     public CompanyDTO editCompany(@RequestBody CompanyDTO company) {
         logger.info("editCompany: {}", company);
-        return null;
+        return service.editCompany(company);
     }
 
 
@@ -82,16 +81,17 @@ public class CompanyController {
      * Перемещение user из одной компании в другую
      */
     @PostMapping("/transferUser")
-    public void transferUser(@RequestBody Map<String, Integer> idTransfer) {
-        logger.info("transferUser {}", idTransfer);
+    public void transferUser(@RequestBody TransferUserDTO transferUserDTO) {
+        logger.info("transferUser");
+        service.transferUser(transferUserDTO);
     }
+
 
     /**
-     * Добавление работника в компанию
+     * Наличие компании с заданным id
      */
-    @PostMapping("/addUser")
-    public void addUser(@RequestBody UserDTO user) {
-        logger.info("addUser {}", user);
+    @GetMapping("/exists/{id}")
+    public Boolean companyExists(@PathVariable Integer id){
+        return service.companyExists(id);
     }
-
 }
