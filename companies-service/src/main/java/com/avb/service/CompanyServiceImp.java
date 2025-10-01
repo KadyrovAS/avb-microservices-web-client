@@ -143,6 +143,9 @@ public class CompanyServiceImp implements CompanyService{
         checkCompany(companyNew);
         checkUsersInCompany(companyNew);
 
+        logger.info("users id are going to print...");
+        companyOld.getUsersId()
+                .forEach(x->logger.info(x.toString()));
         toDismissalUsers(
                 companyOld.getUsersId().stream()
                         .filter(id -> !companyNew.getUsersId().contains(id))

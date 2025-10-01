@@ -218,6 +218,7 @@ public class UserServiceImp implements UserService {
     }
 
     private void copyNullFieldsToNewValue(UserDTO userOld, UserDTO userNew){
+        logger.info("coping userOld {} userNew {}", userOld, userNew);
         if (userNew.getName() == null || userNew.getName().isBlank()){
             userNew.setName(userOld.getName());
         }
@@ -227,7 +228,7 @@ public class UserServiceImp implements UserService {
         if (userNew.getPhoneNumber() == null || userNew.getPhoneNumber().isBlank()){
             userNew.setPhoneNumber(userOld.getPhoneNumber());
         }
-        if (userNew.getCompanyId() == null || userNew.getCompanyId() == 0){
+        if (userNew.getCompanyId() == null){
             userNew.setCompanyId(userOld.getCompanyId());
         }
     }
