@@ -12,6 +12,6 @@ import java.util.List;
 public class CompanyDTO {
     private Integer id;
     private String name;
-    private double budget;
+    private Double budget;
     private List<Integer> usersId;
 }

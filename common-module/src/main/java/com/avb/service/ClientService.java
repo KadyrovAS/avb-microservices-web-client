@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 @Service
@@ -25,11 +26,10 @@ public class ClientService {
     public <T> T getClient(Class<T> clientClass, String serviceName) {
         WebClient companyWebClient = getWebClient(serviceName);
         if (companyWebClient == null) {
-            logger.info("Client was not created!");
             return null;
         }
 
-        logger.info("Client was created!");
+        logger.info("Client {} was created!", serviceName);
         return HttpServiceProxyFactory
                 .builderFor(WebClientAdapter.create(companyWebClient))
                 .build()
@@ -38,7 +38,6 @@ public class ClientService {
 
 
     public WebClient getWebClient(String serviceName) {
-        logger.info("getWebClient was started serviceName = '{}', postfix = '{}'", serviceName, postfix);
         List<ServiceInstance> instances = discoveryClient.getInstances(serviceName);
         if (instances.isEmpty()) {
             logger.error("Service {} not found in Eureka", serviceName);

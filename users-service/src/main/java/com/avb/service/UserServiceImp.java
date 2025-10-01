@@ -70,11 +70,8 @@ public class UserServiceImp implements UserService {
         List<UserDTO> usersDTO = users.stream()
                 .map(this::toUserDTO)
                 .toList();
-        if (usersDTO.isEmpty()) {
-            throw new AVBException("404", "There are no users in the database!");
-        }
 
-        logger.info("Return list users!");
+        logger.info("The list of users was returned!");
         return usersDTO;
     }
 
@@ -127,21 +124,20 @@ public class UserServiceImp implements UserService {
                         .build()
         );
         repository.deleteById(id);
+        logger.info("The user with id = {} was deleted from the database!", id);
         return user;
     }
 
 
     @Override
     public UserDTO editUser(UserDTO userNew) {
-        logger.info("edit user {}", userNew);
-
         if (userNew.getId() == null) {
             throw new AVBException("404", "You must specify the user's id!");
         }
         UserDTO userOld = findUserById(userNew.getId());
+        copyNullFieldsToNewValue(userOld, userNew);
 
         checkUser(userNew);
-        logger.info("after all checks");
 
 
         if (!Objects.equals(userOld.getCompanyId(), userNew.getCompanyId())) {
@@ -153,10 +149,9 @@ public class UserServiceImp implements UserService {
                             .build()
             );
         }
-        logger.info("all checked");
 
         repository.save(fromUserDTO(userNew));
-        logger.info("Информация о пользователе {} обновлена в базе данных", userNew);
+        logger.info("User information {} has been updated in the database", userNew);
         return userNew;
     }
 
@@ -165,16 +160,18 @@ public class UserServiceImp implements UserService {
         for (Integer userId : usersInCompanyDTO.getUsersId()) {
             Optional<User> user = repository.findById(userId);
             if (user.isEmpty()) {
-                throw new AVBException("404", "User with id = " +
+                throw new AVBException("404", "The user with id = " +
                         userId +
-                        " в базе данных отсутствует!");
+                        " is not registered in the database!");
+            }
+            if (user.get().getCompanyId() == 0){
+                continue;
             }
             if (!Objects.equals(user.get().getCompanyId(), usersInCompanyDTO.getCompanyId())) {
-                throw new AVBException("404", "User with id = " +
+                throw new AVBException("404", "There is no user with id = " +
                         userId +
-                        " в компании с id = " +
-                        usersInCompanyDTO.getCompanyId() +
-                        " отсутствует!");
+                        " in the company with id = " +
+                        usersInCompanyDTO.getCompanyId());
             }
         }
     }
@@ -184,9 +181,9 @@ public class UserServiceImp implements UserService {
         for (Integer userId : usersInCompanyDTO.getUsersId()) {
             Optional<User> userOpt = repository.findById(userId);
             if (userOpt.isEmpty()) {
-                throw new AVBException("404", "User with id = " +
+                throw new AVBException("404", "There is no user with id = " +
                         userId +
-                        " в базе данных отсутствует!");
+                        " in the database!");
             }
             User user = userOpt.get();
             user.setCompanyId(0);
@@ -220,4 +217,18 @@ public class UserServiceImp implements UserService {
         }
     }
 
+    private void copyNullFieldsToNewValue(UserDTO userOld, UserDTO userNew){
+        if (userNew.getName() == null || userNew.getName().isBlank()){
+            userNew.setName(userOld.getName());
+        }
+        if (userNew.getFam() == null || userNew.getFam().isBlank()){
+            userNew.setFam(userOld.getFam());
+        }
+        if (userNew.getPhoneNumber() == null || userNew.getPhoneNumber().isBlank()){
+            userNew.setPhoneNumber(userOld.getPhoneNumber());
+        }
+        if (userNew.getCompanyId() == null || userNew.getCompanyId() == 0){
+            userNew.setCompanyId(userOld.getCompanyId());
+        }
+    }
 }
