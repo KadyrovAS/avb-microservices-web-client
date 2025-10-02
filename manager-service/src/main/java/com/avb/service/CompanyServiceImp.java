@@ -2,6 +2,7 @@ package com.avb.service;
 
 import com.avb.model.AVBException;
 import com.avb.model.CompanyDTO;
+import com.avb.model.ValidatedPageable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ public class CompanyServiceImp implements CompanyService {
     private CompanyClient companyClient = null;
     private static final Logger logger = LoggerFactory.getLogger(CompanyServiceImp.class);
     private final ClientService clientService;
+    private ValidatedPageable validatePageableCompany ;
 
     public CompanyServiceImp(ClientService clientService) {
         this.clientService = clientService;
@@ -34,13 +36,12 @@ public class CompanyServiceImp implements CompanyService {
             throw new AVBException("503", "The companies service is not registered!");
         }
         return companyClient;
-
     }
 
     @Override
     public List<CompanyDTO> getAllCompanies() {
         logger.info("Get all companies!");
-        return getCompanyClient().getAllCompanies();
+        return getCompanyClient().getAllCompanies(validatePageableCompany);
     }
 
     @Override

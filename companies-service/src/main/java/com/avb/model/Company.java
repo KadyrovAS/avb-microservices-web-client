@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 
-import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -15,7 +15,7 @@ public class Company {
 
     private String name;
     private double budget;
-    private List<Integer> usersId;
+    private Set<Integer> usersId;
 
     public Integer getId() {
         return id;
@@ -29,7 +29,7 @@ public class Company {
         return budget;
     }
 
-    public List<Integer> getUsersId() {
+    public Set<Integer> getUsersId() {
         return usersId;
     }
 
@@ -45,7 +45,7 @@ public class Company {
         this.budget = budget;
     }
 
-    public void setUsersId(List<Integer> usersId) {
+    public void setUsersId(Set<Integer> usersId) {
         this.usersId = usersId;
     }
 }

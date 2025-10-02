@@ -2,19 +2,22 @@ package com.avb.controller;
 
 import com.avb.model.UserDTO;
 import com.avb.model.UsersInCompanyDTO;
+import com.avb.model.ValidatedPageable;
 import com.avb.service.UserService;
+import com.avb.validation.ValidationGroups;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.service.annotation.PostExchange;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-public class UserController {
+public class UserController{
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
@@ -22,76 +25,72 @@ public class UserController {
     private UserService service;
 
     /**
-     * Возвращает все компании, зарегистрированные в базе данных
-     *
-     * @return List<User>
+     * Получить всех пользователей с пагинацией
      */
     @GetMapping
-    public List<UserDTO> getUsers() {
-        logger.info("Get all users");
-        return service.findAllUsers();
+    public Page<UserDTO> getAllUsers(@Valid ValidatedPageable pageable) {
+        logger.info("get all users with pagination: page={}, size={}, sort={}",
+                pageable.getPage(), pageable.getSize(), pageable.getSort());
+        return service.findAllUsers(pageable.toPageable());
     }
 
     /**
-     * Возвращает компанию с заданным id
-     *
-     * @param id - id Компании
-     * @return User
+     * Получить пользователя по ID
      */
-    @GetMapping("{id}")
-    public UserDTO getUser(@PathVariable Integer id) {
-        logger.info("getCompany: id = {}", id);
+    @GetMapping("/{id}")
+    public UserDTO getUser(
+            @PathVariable
+            @Min(value = 1, message = "User ID must be positive")
+            Integer id) {
+        logger.info("getUser: id = {}", id);
         return service.findUserById(id);
     }
 
     /**
-     * Добавление компании в базу данных
-     *
-     * @return User
+     * Создать нового пользователя
      */
     @PostMapping
-    public UserDTO addUser(@RequestBody UserDTO user) {
+    public UserDTO addUser(@Validated(ValidationGroups.OnCreate.class) @RequestBody UserDTO user) {
         logger.info("add user {}", user);
         return service.addUser(user);
     }
 
     /**
-     * Удаление компании с заданным id из базы данных
-     *
-     * @return User
+     * Удалить пользователя
      */
-    @DeleteMapping("{id}")
-    public UserDTO deleteUser(@PathVariable int id) {
+    @DeleteMapping("/{id}")
+    public UserDTO deleteUser(
+            @PathVariable
+            @Min(value = 1, message = "User ID must be positive")
+            Integer id) {
         logger.info("delete user with id = {}", id);
         return service.deleteUser(id);
     }
 
     /**
-     * Редактирование компании в базе данных
-     *
-     * @return User
+     * Обновить пользователя
      */
     @PutMapping
-    public UserDTO editUser(@RequestBody UserDTO user) {
+    public UserDTO editUser(@Validated(ValidationGroups.OnUpdate.class) @RequestBody UserDTO user) {
         logger.info("edit user: {}", user);
         return service.editUser(user);
     }
 
     /**
-     * Проверка наличия пользователей в списках компании
+     * Проверить пользователей (для внутреннего использования)
      */
     @PostMapping("/check")
-    void checkUsers(@RequestBody UsersInCompanyDTO usersInCompanyDTO){
+    void checkUsers(@Valid @RequestBody UsersInCompanyDTO usersInCompanyDTO) {
         logger.info("check users in company");
         service.checkUsers(usersInCompanyDTO);
     }
 
     /**
-     * Удаление пользователей из списков компании
+     * Изменить статус пользователей (для внутреннего использования)
      */
-    @PostMapping("/dismissal")
-    void dismissalUsers(@RequestBody UsersInCompanyDTO usersInCompanyDTO){
+    @PostMapping("/change-status")
+    void dismissalUsers(@Valid @RequestBody UsersInCompanyDTO usersInCompanyDTO) {
         logger.info("dismissal users from company");
-        service.dismissalUsers(usersInCompanyDTO);
+        service.toChangeStatus(usersInCompanyDTO);
     }
 }

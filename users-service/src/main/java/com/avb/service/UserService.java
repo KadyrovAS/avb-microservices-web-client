@@ -2,16 +2,15 @@ package com.avb.service;
 
 import com.avb.model.UserDTO;
 import com.avb.model.UsersInCompanyDTO;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService{
-    List<UserDTO> findAllUsers();
+    Page<UserDTO> findAllUsers(Pageable pageable);
     UserDTO findUserById(Integer id);
     UserDTO addUser(UserDTO userDTO);
     UserDTO deleteUser(Integer id);
     UserDTO editUser(UserDTO user);
     void checkUsers(UsersInCompanyDTO checkUsersDTO);
-    void dismissalUsers(UsersInCompanyDTO checkUsersDTO);
+    void toChangeStatus(UsersInCompanyDTO checkUsersDTO);
 }

@@ -2,18 +2,23 @@ package com.avb.controller;
 
 import com.avb.model.CompanyDTO;
 import com.avb.model.TransferUserDTO;
+import com.avb.model.ValidatedPageable;
 import com.avb.service.CompanyService;
+import com.avb.validation.ValidationGroups;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-public class CompanyController {
+public class CompanyController{
     private static final Logger logger = LoggerFactory.getLogger(CompanyController.class);
 
     @Autowired
@@ -21,77 +26,78 @@ public class CompanyController {
     private CompanyService service;
 
     /**
-     * Возвращает все компании, зарегистрированные в базе данных
-     *
-     * @return List<Company>
+     * Получить все компании с пагинацией
      */
     @GetMapping
-    public List<CompanyDTO> getAllCompanies() {
-        logger.info("get all companies");
-        return service.findAllCompanies();
+    public Page<CompanyDTO> getAllCompanies(@Valid ValidatedPageable pageable){
+
+        logger.info("get all companies with pagination: page={}, size={}, sort={}",
+                pageable.getPage(), pageable.getSize(), pageable.getSort());
+        return service.findAllCompanies(pageable.toPageable());
     }
 
     /**
-     * Возвращает компанию с заданным id
-     *
-     * @param id - id Компании
-     * @return Company
+     * Получить компанию по ID
      */
-    @GetMapping("{id}")
-    public CompanyDTO getCompany(@PathVariable Integer id) {
+    @GetMapping("/{id}")
+    public CompanyDTO getCompany(
+            @PathVariable
+            @Min(value = 1, message = "Company ID must be positive")
+            Integer id) {
         logger.info("getCompany: id = {}", id);
         return service.findCompanyById(id);
     }
 
     /**
-     * Добавление компании в базу данных
-     *
-     * @return Company
+     * Создать новую компанию
      */
     @PostMapping
-    public CompanyDTO addCompany(@RequestBody CompanyDTO company) {
+    public CompanyDTO addCompany(@Validated(ValidationGroups.OnCreate.class) @RequestBody CompanyDTO company) {
         logger.info("addCompany {}", company);
         return service.addCompany(company);
     }
 
     /**
-     * Удаление компании с заданным id из базы данных
-     *
-     * @return Company
+     * Удалить компанию
      */
-    @DeleteMapping("{id}")
-    public CompanyDTO deleteCompany(@PathVariable int id) {
+    @DeleteMapping("/{id}")
+    public CompanyDTO deleteCompany(
+            @PathVariable
+            @Min(value = 1, message = "User ID must be positive")
+            Integer id) {
         logger.info("deleteCompany id = {}", id);
         return service.deleteCompany(id);
     }
 
     /**
-     * Редактирование компании в базе данных
-     *
-     * @return Company
+     * Обновить компанию
      */
     @PutMapping
-    public CompanyDTO editCompany(@RequestBody CompanyDTO company) {
+    public CompanyDTO editCompany(@Validated(ValidationGroups.OnUpdate.class) @RequestBody CompanyDTO company) {
         logger.info("editCompany: {}", company);
         return service.editCompany(company);
     }
 
 
     /**
-     * Перемещение user из одной компании в другую
+     * Переместить пользователя между компаниями
      */
-    @PostMapping("/transferUser")
-    public void transferUser(@RequestBody TransferUserDTO transferUserDTO) {
+    @PostMapping("/transfer-user")
+    public void transferUser(@Valid @RequestBody TransferUserDTO transferUserDTO) {
         logger.info("transferUser");
         service.transferUser(transferUserDTO);
     }
 
 
     /**
-     * Наличие компании с заданным id
+     * Проверить существование компании
      */
     @GetMapping("/exists/{id}")
-    public Boolean companyExists(@PathVariable Integer id){
+    public Boolean companyExists(
+            @PathVariable
+            @Min(value = 1, message = "Company ID must be positive")
+            Integer id) {
+        logger.info("companyExists");
         return service.companyExists(id);
     }
 }

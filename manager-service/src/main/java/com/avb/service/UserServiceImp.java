@@ -16,6 +16,7 @@ public class UserServiceImp implements UserService {
     private UserClient userClient = null;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImp.class);
     private final ClientService clientService;
+    private Integer userPagination = 1;
 
     public UserServiceImp(ClientService clientService) {
         this.clientService = clientService;
@@ -38,7 +39,7 @@ public class UserServiceImp implements UserService {
     @Override
     public List<UserDTO> getAllUsers() {
         logger.info("Get all users!");
-        return getUserClient().getAllUsers();
+        return getUserClient().getAllUsers(userPagination);
     }
 
     @Override

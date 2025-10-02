@@ -8,7 +8,7 @@ import org.springframework.web.service.annotation.PostExchange;
 
 public interface CompanyClient {
 
-    @PostExchange("/transferUser")
+    @PostExchange("/transfer-user")
     void transferUser(@RequestBody TransferUserDTO transferUserDTO);
 
     @GetExchange("/exists/{id}")

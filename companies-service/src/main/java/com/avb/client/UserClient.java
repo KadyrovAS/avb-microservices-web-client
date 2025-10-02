@@ -9,7 +9,7 @@ public interface UserClient {
     @PostExchange("/check")
     void checkUsers(@RequestBody UsersInCompanyDTO usersInCompanyDTO);
 
-    @PostExchange("/dismissal")
-    void dismissalUsers(@RequestBody UsersInCompanyDTO usersInCompanyDTO);
+    @PostExchange("/change-status")
+    void toChangeStatusUsers(@RequestBody UsersInCompanyDTO usersInCompanyDTO);
 
 }

@@ -6,10 +6,12 @@ import com.avb.repository.CompanyRepo;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("CompanyServiceImp")
 public class CompanyServiceImp implements CompanyService{
@@ -65,13 +67,12 @@ public class CompanyServiceImp implements CompanyService{
      * @return
      */
     @Override
-    public List<CompanyDTO> findAllCompanies() {
-        List<CompanyDTO> companiesDTO = repository.findAll().stream()
-                .map(this::toCompanyDTO)
-                .toList();
+    public Page<CompanyDTO> findAllCompanies(Pageable pageable) {
+        Page<Company> companiesPage = repository.findAll(pageable);
+        Page<CompanyDTO>companiesDTOPage = companiesPage.map(this::toCompanyDTO);
 
         logger.info("The list of companies was returned!");
-        return companiesDTO;
+        return companiesDTOPage;
     }
 
     /**
@@ -98,10 +99,9 @@ public class CompanyServiceImp implements CompanyService{
     @Override
     public CompanyDTO addCompany(CompanyDTO companyDTO) {
         if (companyDTO.getUsersId() == null) {
-            companyDTO.setUsersId(new LinkedList<>());
+            companyDTO.setUsersId(new HashSet<>());
         }
 
-        checkCompany(companyDTO);
         if (companyDTO.getId() != 0 && repository.existsById(companyDTO.getId())) {
             throw new AVBException("404", "The operation was rejected! The company with id = " +
                     companyDTO.getId() +
@@ -139,17 +139,19 @@ public class CompanyServiceImp implements CompanyService{
         }
         CompanyDTO companyOld = findCompanyById(companyNew.getId());
 
-        copyNullFieldsToNewValue(companyOld, companyNew);
-        checkCompany(companyNew);
         checkUsersInCompany(companyNew);
 
-        logger.info("users id are going to print...");
-        companyOld.getUsersId()
-                .forEach(x->logger.info(x.toString()));
         toDismissalUsers(
                 companyOld.getUsersId().stream()
                         .filter(id -> !companyNew.getUsersId().contains(id))
-                        .toList()
+                        .collect(Collectors.toSet())
+        );
+
+        toEmployUsers(
+                companyNew.getUsersId().stream()
+                        .filter(id -> !companyOld.getUsersId().contains(id))
+                        .collect(Collectors.toSet()),
+                companyNew.getId()
         );
 
         repository.save(fromCompanyDTO(companyNew));
@@ -166,6 +168,7 @@ public class CompanyServiceImp implements CompanyService{
     @Override
     @Transactional
     public void transferUser(TransferUserDTO transferUser) {
+        logger.info("transfer user {}", transferUser);
         Integer userId = transferUser.getUserId();
         Integer companyIdFrom = transferUser.getCompanyIdFrom();
         Integer companyIdTo = transferUser.getCompanyIdTo();
@@ -175,13 +178,15 @@ public class CompanyServiceImp implements CompanyService{
             companyFrom.setUsersId(
                     companyFrom.getUsersId().stream()
                             .filter(id -> !Objects.equals(id, userId))
-                            .toList()
+                            .collect(Collectors.toSet())
             );
             editCompany(companyFrom);
         }
         if (companyIdTo != 0) {
             CompanyDTO companyTo = findCompanyById(companyIdTo);
-            companyTo.getUsersId().add(userId);
+            Set<Integer>users = companyTo.getUsersId();
+            users.add(userId);
+            companyTo.setUsersId(users);
             editCompany(companyTo);
         }
     }
@@ -223,52 +228,23 @@ public class CompanyServiceImp implements CompanyService{
      *
      * @param users
      */
-    private void toDismissalUsers(List<Integer> users) {
-        logger.info("toDismissalUsers users {}", users);
+    private void toDismissalUsers(Set<Integer> users) {
         if (users.isEmpty()) {
             return;
         }
-        logger.info("toDismissalUsers continue ...");
         UsersInCompanyDTO usersInCompanyDTO = UsersInCompanyDTO.builder()
                 .usersId(users)
                 .companyId(0)
                 .build();
-        logger.info("getUserClient.dismissalUsers({})", usersInCompanyDTO);
-        getUserClient().dismissalUsers(usersInCompanyDTO);
+        getUserClient().toChangeStatusUsers(usersInCompanyDTO);
     }
 
-    private void checkCompany(CompanyDTO companyDTO) {
-        if (companyDTO.getId() == null) {
-            companyDTO.setId(0);
-        }
-        if (companyDTO.getBudget() == null) {
-            companyDTO.setBudget(0.0);
-        }
-        if (companyDTO.getName() == null || companyDTO.getName().isBlank()) {
-            throw new AVBException("404", "You must specify the company name!");
-        }
+    private void toEmployUsers(Set<Integer> users, Integer companyId){
+        UsersInCompanyDTO usersInCompanyDTO = UsersInCompanyDTO.builder()
+                .usersId(users)
+                .companyId(companyId)
+                .build();
+        getUserClient().toChangeStatusUsers(usersInCompanyDTO);
 
-        if (companyDTO.getBudget() == 0) {
-            throw new AVBException("404", "you must specify the company's budget!");
-        }
-    }
-
-
-    /**
-     * В случае, если при редактировании сущности не были указаны новые значения полей,
-     * то сохраняются старые значения
-     * @param companyOld
-     * @param companyNew
-     */
-    private void copyNullFieldsToNewValue(CompanyDTO companyOld, CompanyDTO companyNew) {
-        if (companyNew.getName() == null || companyNew.getName().isBlank()){
-            companyNew.setName(companyOld.getName());
-        }
-        if (companyNew.getBudget() == null || companyNew.getBudget() == 0){
-            companyNew.setBudget(companyOld.getBudget());
-        }
-        if (companyNew.getUsersId() == null || companyNew.getUsersId().isEmpty()){
-            companyNew.setUsersId(companyOld.getUsersId());
-        }
     }
 }

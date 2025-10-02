@@ -5,6 +5,8 @@ import com.avb.model.*;
 import com.avb.repository.UserRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,14 +67,12 @@ public class UserServiceImp implements UserService {
      * @return
      */
     @Override
-    public List<UserDTO> findAllUsers() {
-        List<User> users = repository.findAll();
-        List<UserDTO> usersDTO = users.stream()
-                .map(this::toUserDTO)
-                .toList();
+    public Page<UserDTO> findAllUsers(Pageable pageable) {
+        Page<User> usersPage = repository.findAll(pageable);
+        Page<UserDTO>usersDTOPages = usersPage.map(this::toUserDTO);
 
         logger.info("The list of users was returned!");
-        return usersDTO;
+        return usersDTOPages;
     }
 
     /**
@@ -100,22 +100,34 @@ public class UserServiceImp implements UserService {
      */
     @Override
     public UserDTO addUser(UserDTO userDTO) {
-        checkUser(userDTO);
+        logger.info("User {}", userDTO);
+        if (userDTO.getCompanyId() != 0){
+            getCompanyClient().transferUser(
+                    TransferUserDTO.builder()
+                            .userId(userDTO.getId())
+                            .companyIdFrom(0)
+                            .companyIdTo(userDTO.getCompanyId())
+                            .build()
+            );
+        }
         User user = repository.save(fromUserDTO(userDTO));
+
         logger.info("User {} was added to database!", user);
         return toUserDTO(user);
     }
 
 
     /**
-     * Удаление компании из базы данных
+     * Удаление пользователя из базы данных
      *
      * @param id
      * @return
      */
     @Override
     public UserDTO deleteUser(Integer id) {
+        logger.info("delete user");
         UserDTO user = findUserById(id);
+        logger.info("before transfer command");
         getCompanyClient().transferUser(
                 TransferUserDTO.builder()
                         .userId(id)
@@ -123,6 +135,8 @@ public class UserServiceImp implements UserService {
                         .companyIdTo(0)
                         .build()
         );
+
+        logger.info("before repository");
         repository.deleteById(id);
         logger.info("The user with id = {} was deleted from the database!", id);
         return user;
@@ -135,10 +149,6 @@ public class UserServiceImp implements UserService {
             throw new AVBException("404", "You must specify the user's id!");
         }
         UserDTO userOld = findUserById(userNew.getId());
-        copyNullFieldsToNewValue(userOld, userNew);
-
-        checkUser(userNew);
-
 
         if (!Objects.equals(userOld.getCompanyId(), userNew.getCompanyId())) {
             getCompanyClient().transferUser(
@@ -177,7 +187,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public void dismissalUsers(UsersInCompanyDTO usersInCompanyDTO) {
+    public void toChangeStatus(UsersInCompanyDTO usersInCompanyDTO) {
         for (Integer userId : usersInCompanyDTO.getUsersId()) {
             Optional<User> userOpt = repository.findById(userId);
             if (userOpt.isEmpty()) {
@@ -186,50 +196,8 @@ public class UserServiceImp implements UserService {
                         " in the database!");
             }
             User user = userOpt.get();
-            user.setCompanyId(0);
+            user.setCompanyId(usersInCompanyDTO.getCompanyId());
             repository.save(user);
-        }
-    }
-
-
-    private void checkUser(UserDTO userDTO) {
-        if (userDTO.getCompanyId() == null){
-            userDTO.setCompanyId(0);
-        }
-        if (userDTO.getName() == null || userDTO.getName().isBlank()) {
-            throw new AVBException("404", "You must specify the user name!");
-        }
-
-        if (userDTO.getFam() == null || userDTO.getFam().isBlank()) {
-            throw new AVBException("404", "You must specify the user surname!");
-        }
-
-        if (userDTO.getPhoneNumber() == null || userDTO.getPhoneNumber().isBlank()) {
-            throw new AVBException("404", "You must specify the user's phone number!");
-        }
-
-        if (userDTO.getCompanyId() != 0 &&
-                !getCompanyClient().companyExists(userDTO.getCompanyId())) {
-            throw new AVBException("404",
-                    "The company with id = " +
-                            userDTO.getCompanyId() +
-                            " is not registered in the database");
-        }
-    }
-
-    private void copyNullFieldsToNewValue(UserDTO userOld, UserDTO userNew){
-        logger.info("coping userOld {} userNew {}", userOld, userNew);
-        if (userNew.getName() == null || userNew.getName().isBlank()){
-            userNew.setName(userOld.getName());
-        }
-        if (userNew.getFam() == null || userNew.getFam().isBlank()){
-            userNew.setFam(userOld.getFam());
-        }
-        if (userNew.getPhoneNumber() == null || userNew.getPhoneNumber().isBlank()){
-            userNew.setPhoneNumber(userOld.getPhoneNumber());
-        }
-        if (userNew.getCompanyId() == null){
-            userNew.setCompanyId(userOld.getCompanyId());
         }
     }
 }

@@ -12,8 +12,8 @@ import java.util.List;
 
 public interface UserClient {
 
-    @GetExchange
-    List<UserDTO> getAllUsers();
+    @GetExchange("/pagination/{pagination}")
+    List<UserDTO> getAllUsers(@PathVariable Integer pagination);
 
     @GetExchange("/{id}")
     UserDTO getUserById(@PathVariable Integer id);
@@ -24,6 +24,6 @@ public interface UserClient {
     @PutExchange
     UserDTO editUser(@RequestBody UserDTO user);
 
-    @DeleteExchange("{id}")
+    @DeleteExchange("/{id}")
     UserDTO deleteUser(@PathVariable Integer id);
 }
