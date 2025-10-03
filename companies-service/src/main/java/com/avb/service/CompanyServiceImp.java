@@ -42,7 +42,9 @@ public class CompanyServiceImp implements CompanyService{
 
     }
 
-
+    /**
+     * Преобразовать Company в CompanyDTO
+     */
     private CompanyDTO toCompanyDTO(Company company) {
         return CompanyDTO.builder()
                 .id(company.getId())
@@ -52,6 +54,9 @@ public class CompanyServiceImp implements CompanyService{
                 .build();
     }
 
+    /**
+     * Преобразовать CompanyDTO в Company
+     */
     private Company fromCompanyDTO(CompanyDTO companyDTO) {
         Company company = new Company();
         company.setId(companyDTO.getId());
@@ -62,9 +67,7 @@ public class CompanyServiceImp implements CompanyService{
     }
 
     /**
-     * Поиск всех компаний в базе данных
-     *
-     * @return
+     * Получить все компании
      */
     @Override
     public Page<CompanyDTO> findAllCompanies(Pageable pageable) {
@@ -76,10 +79,7 @@ public class CompanyServiceImp implements CompanyService{
     }
 
     /**
-     * Поиск компании в базе данных по id
-     *
-     * @param id
-     * @return
+     * Получить компанию по id
      */
     public CompanyDTO findCompanyById(Integer id) {
         Optional<Company> company = repository.findById(id);
@@ -91,12 +91,10 @@ public class CompanyServiceImp implements CompanyService{
     }
 
     /**
-     * Добавление компании в базу данных
-     *
-     * @param companyDTO
-     * @return
+     * Создать компанию
      */
     @Override
+    @Transactional
     public CompanyDTO addCompany(CompanyDTO companyDTO) {
         if (companyDTO.getUsersId() == null) {
             companyDTO.setUsersId(new HashSet<>());
@@ -117,12 +115,10 @@ public class CompanyServiceImp implements CompanyService{
 
 
     /**
-     * Удаление компании из базы данных
-     *
-     * @param id
-     * @return
+     * Удалить компанию
      */
     @Override
+    @Transactional
     public CompanyDTO deleteCompany(Integer id) {
         CompanyDTO company = findCompanyById(id);
         toDismissalUsers(company.getUsersId());
@@ -131,8 +127,11 @@ public class CompanyServiceImp implements CompanyService{
         return company;
     }
 
-
+    /**
+     * Изменить компанию
+     */
     @Override
+    @Transactional
     public CompanyDTO editCompany(CompanyDTO companyNew) {
         if (companyNew.getId() == null) {
             throw new AVBException("404", "You must specify the company's id!");
@@ -161,9 +160,7 @@ public class CompanyServiceImp implements CompanyService{
 
 
     /**
-     * Перемещает пользователя из списков одной компании в списки другой компании
-     *
-     * @param transferUser
+     * Переместить пользователя из одной компании в другую компанию
      */
     @Override
     @Transactional
@@ -192,10 +189,7 @@ public class CompanyServiceImp implements CompanyService{
     }
 
     /**
-     * Проверяет наличие компании с заданным id в базе данных
-     *
-     * @param id
-     * @return
+     * Проверить наличие компании с заданным id в базе данных
      */
     @Override
     public Boolean companyExists(Integer id) {
@@ -208,9 +202,7 @@ public class CompanyServiceImp implements CompanyService{
     }
 
     /**
-     * Проверяет соответствие пользователей данной компании
-     *
-     * @param company
+     * Проверить наличие пользователей в данной компании
      */
     private void checkUsersInCompany(CompanyDTO company) {
         if (company.getUsersId().isEmpty()) {
@@ -224,9 +216,7 @@ public class CompanyServiceImp implements CompanyService{
     }
 
     /**
-     * Увольнение пользователей из компании по списку
-     *
-     * @param users
+     * Уволить пользователя с заданным id из компании
      */
     private void toDismissalUsers(Set<Integer> users) {
         if (users.isEmpty()) {
@@ -245,6 +235,5 @@ public class CompanyServiceImp implements CompanyService{
                 .companyId(companyId)
                 .build();
         getUserClient().toChangeStatusUsers(usersInCompanyDTO);
-
     }
 }

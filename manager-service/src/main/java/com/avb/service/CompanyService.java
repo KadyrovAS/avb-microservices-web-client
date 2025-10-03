@@ -1,11 +1,11 @@
 package com.avb.service;
 
 import com.avb.model.CompanyDTO;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CompanyService {
-    List<CompanyDTO> getAllCompanies();
+    Page<CompanyDTO> getAllCompanies(Pageable pageable);
     CompanyDTO createCompany(CompanyDTO companyDTO);
     CompanyDTO getCompanyById(Integer id);
     CompanyDTO updateCompany(CompanyDTO companyDTO);

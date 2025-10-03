@@ -1,30 +1,26 @@
 package com.avb.client;
 
 import com.avb.model.CompanyDTO;
-import com.avb.model.ValidatedPageable;
-import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.service.annotation.DeleteExchange;
-import org.springframework.web.service.annotation.GetExchange;
-import org.springframework.web.service.annotation.PostExchange;
-import org.springframework.web.service.annotation.PutExchange;
+import org.springframework.web.service.annotation.*;
 
-import java.util.List;
-
+@HttpExchange("/companies")
 public interface CompanyClient {
 
     @GetExchange
-    List<CompanyDTO> getAllCompanies(ValidatedPageable pageable);
+    Page<CompanyDTO> getAllCompanies(Pageable pageable);
 
     @GetExchange("/{id}")
     CompanyDTO getCompanyById(@PathVariable Integer id);
 
     @PostExchange
-    CompanyDTO createCompany(@RequestBody CompanyDTO user);
+    CompanyDTO createCompany(@RequestBody CompanyDTO company);
 
     @PutExchange
-    CompanyDTO editCompany(@RequestBody CompanyDTO user);
+    CompanyDTO editCompany(@RequestBody CompanyDTO company);
 
     @DeleteExchange("/{id}")
     CompanyDTO deleteCompany(@PathVariable Integer id);

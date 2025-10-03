@@ -1,19 +1,16 @@
 package com.avb.client;
 
 import com.avb.model.UserDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.service.annotation.DeleteExchange;
-import org.springframework.web.service.annotation.GetExchange;
-import org.springframework.web.service.annotation.PostExchange;
-import org.springframework.web.service.annotation.PutExchange;
-
-import java.util.List;
+import org.springframework.web.service.annotation.*;
 
 public interface UserClient {
 
-    @GetExchange("/pagination/{pagination}")
-    List<UserDTO> getAllUsers(@PathVariable Integer pagination);
+    @GetExchange
+    Page<UserDTO> getAllUsers(Pageable pageable);
 
     @GetExchange("/{id}")
     UserDTO getUserById(@PathVariable Integer id);
