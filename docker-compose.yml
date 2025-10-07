@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # Eureka Discovery Server
+  discovery-service:
+    build:
+      context: .
+      dockerfile: discovery-service/Dockerfile
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - avb-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - EUREKA_SERVER_ENABLE-SELF-PRESERVATION=false
+      - EUREKA_CLIENT_REGISTER-WITH-EUREKA=false
+      - EUREKA_CLIENT_FETCH-REGISTRY=false
+
+  # Companies Service
+  companies-service:
+    build:
+      context: .
+      dockerfile: companies-service/Dockerfile
+    container_name: companies-service
+    ports:
+      - "8082:8082"
+    networks:
+      - avb-network
+    depends_on:
+      - discovery-service
+    environment:
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFER-IP-ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=companies-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Users Service
+  users-service:
+    build:
+      context: .
+      dockerfile: users-service/Dockerfile
+    container_name: users-service
+    ports:
+      - "8084:8084"
+    networks:
+      - avb-network
+    depends_on:
+      - discovery-service
+    environment:
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFER-IP-ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=users-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Manager Service (API Gateway)
+  manager-service:
+    build:
+      context: .
+      dockerfile: manager-service/Dockerfile
+    container_name: manager-service
+    ports:
+      - "8080:8080"
+    networks:
+      - avb-network
+    depends_on:
+      - discovery-service
+      - companies-service
+      - users-service
+    environment:
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFER-IP-ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=manager-service
+      - SPRING_APPLICATION_NAME=manager
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  avb-network:
+    driver: bridge
