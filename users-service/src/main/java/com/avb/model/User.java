@@ -6,8 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="user_app")
-public class User {
+@Table(name = "user_app")
+public class User{
     @Id
     @GeneratedValue
     private Integer id;
@@ -55,5 +55,25 @@ public class User {
 
     public void setCompanyId(Integer companyId) {
         this.companyId = companyId;
+    }
+
+    public static UserDTO toUserDTO(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .fam(user.getFam())
+                .phoneNumber(user.getPhoneNumber())
+                .companyId(user.getCompanyId())
+                .build();
+    }
+
+    public static User fromUserDTO(UserDTO userDTO) {
+        User user = new User();
+        user.setId(userDTO.getId());
+        user.setName(userDTO.getName());
+        user.setFam(userDTO.getFam());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setCompanyId(userDTO.getCompanyId());
+        return user;
     }
 }

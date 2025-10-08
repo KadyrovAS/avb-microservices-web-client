@@ -43,36 +43,12 @@ public class CompanyServiceImpl implements CompanyService{
     }
 
     /**
-     * Преобразовать Company в CompanyDTO
-     */
-    private CompanyDTO toCompanyDTO(Company company) {
-        return CompanyDTO.builder()
-                .id(company.getId())
-                .name(company.getName())
-                .budget(company.getBudget())
-                .usersId(company.getUsersId())
-                .build();
-    }
-
-    /**
-     * Преобразовать CompanyDTO в Company
-     */
-    private Company fromCompanyDTO(CompanyDTO companyDTO) {
-        Company company = new Company();
-        company.setId(companyDTO.getId());
-        company.setName(companyDTO.getName());
-        company.setBudget(companyDTO.getBudget());
-        company.setUsersId(companyDTO.getUsersId());
-        return company;
-    }
-
-    /**
      * Получить все компании
      */
     @Override
     public List<CompanyFullDTO> findAllCompanies(Pageable pageable) {
         Page<Company> companiesPage = repository.findAll(pageable);
-        Page<CompanyDTO> companiesDTOPage = companiesPage.map(this::toCompanyDTO);
+        Page<CompanyDTO> companiesDTOPage = companiesPage.map(company -> Company.toCompanyDTO(company));
 
         List<Integer> usersId = new LinkedList<>();
         for (CompanyDTO company : companiesDTOPage) {
@@ -106,7 +82,7 @@ public class CompanyServiceImpl implements CompanyService{
             throw new AVBException("404", "There is no company with id = " + id + "  in the database!");
         }
         logger.info("A company with id = {} has been found", id);
-        return toCompanyDTO(company.get());
+        return Company.toCompanyDTO(company.get());
     }
 
     /**
@@ -129,9 +105,9 @@ public class CompanyServiceImpl implements CompanyService{
 
         checkUsersInCompany(companyDTO);
 
-        Company company = repository.save(fromCompanyDTO(companyDTO));
+        Company company = repository.save(Company.fromCompanyDTO(companyDTO));
         logger.info("Company {} was added to database!", company);
-        return toCompanyDTO(company);
+        return Company.toCompanyDTO(company);
     }
 
 
@@ -175,7 +151,7 @@ public class CompanyServiceImpl implements CompanyService{
                 companyNew.getId()
         );
 
-        repository.save(fromCompanyDTO(companyNew));
+        repository.save(Company.fromCompanyDTO(companyNew));
         logger.info("The company with id = {} in the database has been updated!", companyNew.getId());
         return companyNew;
     }

@@ -39,33 +39,13 @@ public class UserServiceImpl implements UserService{
         return companyClient;
     }
 
-    private UserDTO toUserDTO(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .fam(user.getFam())
-                .phoneNumber(user.getPhoneNumber())
-                .companyId(user.getCompanyId())
-                .build();
-    }
-
-    private User fromUserDTO(UserDTO userDTO) {
-        User user = new User();
-        user.setId(userDTO.getId());
-        user.setName(userDTO.getName());
-        user.setFam(userDTO.getFam());
-        user.setPhoneNumber(userDTO.getPhoneNumber());
-        user.setCompanyId(userDTO.getCompanyId());
-        return user;
-    }
-
     /**
      * Поиск всех пользователей в базе данных
      */
     @Override
     public List<UserFullDTO> findAllUsers(Pageable pageable) {
         Page<User> usersPage = repository.findAll(pageable);
-        Page<UserDTO> usersDTOPages = usersPage.map(this::toUserDTO);
+        Page<UserDTO> usersDTOPages = usersPage.map(user->User.toUserDTO(user));
         List<Integer> companiesId = usersDTOPages.stream().map(us -> us.getCompanyId()).toList();
         Map<Integer, CompanyDTO> companyDTOMap = getCompanyClient().getListCompaniesById(companiesId);
         List<UserFullDTO> usersFullDTO = new LinkedList<>();
@@ -79,7 +59,6 @@ public class UserServiceImpl implements UserService{
         return usersFullDTO;
     }
 
-
     /**
      * Поиск пользователя в базе данных по id
      */
@@ -92,7 +71,7 @@ public class UserServiceImpl implements UserService{
         }
 
         logger.info("A user with id= {} has been found", id);
-        return toUserDTO(user.get());
+        return User.toUserDTO(user.get());
     }
 
     /**
@@ -124,10 +103,10 @@ public class UserServiceImpl implements UserService{
                             .build()
             );
         }
-        User user = repository.save(fromUserDTO(userDTO));
+        User user = repository.save(User.fromUserDTO(userDTO));
 
         logger.info("User {} was added to database!", user);
-        return toUserDTO(user);
+        return User.toUserDTO(user);
     }
 
 
@@ -172,7 +151,7 @@ public class UserServiceImpl implements UserService{
             );
         }
 
-        repository.save(fromUserDTO(userNew));
+        repository.save(User.fromUserDTO(userNew));
         logger.info("User information {} has been updated in the database", userNew);
         return userNew;
     }

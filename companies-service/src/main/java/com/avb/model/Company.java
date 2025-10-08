@@ -48,4 +48,22 @@ public class Company {
     public void setUsersId(Set<Integer> usersId) {
         this.usersId = usersId;
     }
+
+    public static Company fromCompanyDTO(CompanyDTO companyDTO){
+        Company company = new Company();
+        company.setId(companyDTO.getId());
+        company.setName(companyDTO.getName());
+        company.setBudget(companyDTO.getBudget());
+        company.setUsersId(companyDTO.getUsersId());
+        return company;
+    }
+
+    public static CompanyDTO toCompanyDTO(Company company){
+        return CompanyDTO.builder()
+                .id(company.getId())
+                .name(company.getName())
+                .budget(company.getBudget())
+                .usersId(company.getUsersId())
+                .build();
+    }
 }
