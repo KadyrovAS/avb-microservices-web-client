@@ -1,0 +1,62 @@
+@startuml
+FRONTEND -[#red]-> manager: post url_manager:8080/user
+manager -[#blue]-> FRONTEND: UserDTO
+FRONTEND -[#red]-> manager: put url_manager:8080/user
+manager -[#blue]-> FRONTEND: UserDTO
+FRONTEND -[#red]-> manager: delete url_manager:8080/user/id Integer
+manager -[#blue]-> FRONTEND: UserDTO
+FRONTEND -[#red]-> manager: GET url_manager:8080/user
+manager -[#blue]-> FRONTEND: List<UserFullDTO>
+FRONTEND -[#red]-> manager: GET url_manager:8080/user/id Integer
+manager -[#blue]-> FRONTEND: UserFullDTO
+
+
+FRONTEND -[#green]-> manager: post url_manager:8080/company
+manager -[#blue]-> FRONTEND: UserDTO
+FRONTEND -[#green]-> manager: put url_manager:8080/company
+manager -[#blue]-> FRONTEND: UserDTO
+FRONTEND -[#green]-> manager: delete url_manager:8080/company/id Integer
+manager -[#blue]-> FRONTEND: UserDTO
+FRONTEND -[#green]-> manager: GET url_manager:8080/company
+manager -[#blue]-> FRONTEND: List<UserFullDTO>
+FRONTEND -[#green]-> manager: GET url_manager:8080/company/id Integer
+manager -[#blue]-> FRONTEND: UserFullDTO
+
+
+manager -[#red]-> user: post url:8081/users/api
+user -[#blue]-> manager: UserDTO
+manager -[#red]-> user: put url:8081/users/api
+user -[#blue]-> manager: UserDTO
+manager -[#red]-> user: delete url:8081/users/api/id Integer
+user -[#blue]-> manager: UserDTO
+manager -[#red]-> user: GET url:8081/users/api
+user -[#blue]-> manager: List<UserFullDTO>
+manager -[#red]-> user: GET url:8081/users/api/id Integer
+user -[#blue]-> manager: UserFullDTO
+
+
+manager -[#green]-> company: post url:8082/companies/api
+company -[#blue]-> manager: UserDTO
+manager -[#green]-> company: put url:8082/companies/api
+company -[#blue]-> manager: UserDTO
+manager -[#green]-> company: delete url:8082/companies/api/id
+company -[#blue]-> manager: UserDTO
+manager -[#green]-> company: GET url:8082/companies/api
+company -[#blue]-> manager: List<UserFullDTO>
+manager -[#red]-> company: GET url:8082/companies/api/id
+company -[#blue]-> manager: UserFullDTO
+
+company --> user: Post url:8081/users/api/check UsersInCompanyDTO
+company --> user: Post url:8081/users/api/change-status UsersInCompanyDTO
+company --> user: Get url:8081/users/api/list List<Integer> usersId
+user --> company: Map<Integer, UserDTO>
+
+
+user --> company: Post url:8082/companies/api/transfer-user TransferUserDTO
+user --> company: Get url:8082/companies/api/exists/id Integer
+company --> user: Boolean
+user --> company: Get url:8082/companies/api/list  List<Integer>companiesId
+company --> user: Map<Integer, CompanyDTO>
+user --> company: Get url:8082/companies/api/id
+company -->user: CompanyDTO
+@enduml
